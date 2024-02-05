@@ -1,0 +1,19 @@
+{
+    "name": "tofu",
+    "version": "0.0.1",
+    "description": "html template engine idk",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
+    "author": "atomoxetine",
+    "license": "ISC",
+    "devDependencies": {
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    },
+    "dependencies": {
+        "fp-ts": "^2.16.2"
+    }
+}
