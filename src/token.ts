@@ -37,7 +37,14 @@ export enum BinOperator {
 export const binOperators = objToValArray(BinOperator)
 export const binOperatorInitials = objToValInitials(BinOperator)
 
-export class Token { }
+export class Token {
+    line: number
+    col: number
+    constructor(line: number, col: number) {
+        this.line = line
+        this.col = col
+    }
+}
 
 export class OpenTemplateToken extends Token { }
 export class CloseTemplateToken extends Token { }
@@ -45,27 +52,27 @@ export class OpenParenthesisToken extends Token {  }
 export class CloseParenthesisToken extends Token {  }
 export class NumberToken extends Token {
     value: number
-    constructor(value: number) { super(); this.value = value }
+    constructor(value: number, line: number, col: number) { super(line, col); this.value = value }
 }
 export class StringToken extends Token {
     value: string
-    constructor(value: string) { super(); this.value = value }
+    constructor(value: string, line: number, col: number) { super(line, col); this.value = value }
 }
 export class KeywordToken extends Token {
     value: Keyword
-    constructor(value: Keyword) { super(); this.value = value }
+    constructor(value: Keyword, line: number, col: number) { super(line, col); this.value = value }
 }
 export class SymbolToken extends Token {
     value: string
-    constructor(value: string) { super(); this.value = value }
+    constructor(value: string, line: number, col: number) { super(line, col); this.value = value }
 }
 export class UnOperatorToken extends Token {
     value: UnOperator
-    constructor(value: UnOperator) { super(); this.value = value }
+    constructor(value: UnOperator, line: number, col: number) { super(line, col); this.value = value }
 }
 export class BinOperatorToken extends Token {
     value: BinOperator
-    constructor(value: BinOperator) { super(); this.value = value }
+    constructor(value: BinOperator, line: number, col: number) { super(line, col); this.value = value }
 }
 
 

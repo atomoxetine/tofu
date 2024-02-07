@@ -40,6 +40,17 @@ function isBinOperatorStart(chr: string) {
     return binOperatorInitials.indexOf(chr) > -1
 }
 
+const CHAR_TO_ESCAPED = {
+    "n": "\n",
+    "r": "\r",
+    "t": "\t",
+    "s": "\s",
+    "0": "\0",
+    "\\": "\\",
+    "'": "'",
+    '"': '"',
+}
+
 
 export class TofuLexer {
     inputStream: TofuInputStream
@@ -70,6 +81,10 @@ export class TofuLexer {
     readNumber(): Either<string, NumberToken> {
         let hasDot = false
         let err: string | null = null
+
+        let { line, col } = this.inputStream
+        col++
+
         let numberRes = this.readWhile((chr: string) => {
             if (chr == ".") {
                 if (hasDot) {
@@ -87,7 +102,7 @@ export class TofuLexer {
         return pipe(
             numberRes,
             match(
-                number => right(new NumberToken(parseFloat(number))),
+                number => right(new NumberToken(parseFloat(number), line, col)),
                 err => left(err)
             )
         )
@@ -107,7 +122,10 @@ export class TofuLexer {
             let chr = this.inputStream.next()
 
             if (isEscaped) {
-                str += chr
+                if (!CHAR_TO_ESCAPED[chr]) {
+                    return left(this.inputStream.croak(`Cannot escape ${chr}`))
+                }
+                str += CHAR_TO_ESCAPED[chr]
                 isEscaped = false
             } else if (chr == "\\") {
                 isEscaped = true
@@ -124,28 +142,40 @@ export class TofuLexer {
     }
 
     readString(): Either<string, StringToken> {
+
+        let { line, col } = this.inputStream
+        col++
+
         return pipe(
             this.readEscaped(),
             match(
                 err => left(err),
-                text => right(new StringToken(text))
+                text => right(new StringToken(text, line, col))
             )
         )
     }
 
     readSymbol(): Either<string, SymbolToken | KeywordToken> {
+
+        let { line, col } = this.inputStream
+        col++
+
         return pipe(
             this.readWhile(isSymbolBody),
             match(
                 err => left(err),
                 tokenStr => isKeyword(tokenStr)
-                    ? right(new KeywordToken(tokenStr as Keyword))
-                    : right(new SymbolToken(tokenStr))
+                    ? right(new KeywordToken(tokenStr as Keyword, line, col))
+                    : right(new SymbolToken(tokenStr, line, col))
             )
         )
     }
 
     readOperator(operator: Object): Either<string, UnOperatorToken | BinOperatorToken> {
+
+        let { line, col } = this.inputStream
+        col++
+
         let remaining = Object.values(operator)
         let idx = 0
         return pipe(
@@ -168,9 +198,9 @@ export class TofuLexer {
             match(
                 err => left(err),
                 opStr => isBinOperator(opStr)
-                    ? right(new BinOperatorToken(opStr as BinOperator))
+                    ? right(new BinOperatorToken(opStr as BinOperator, line, col))
                     : isUnOperator(opStr)
-                        ? right(new UnOperatorToken(opStr as UnOperator))
+                        ? right(new UnOperatorToken(opStr as UnOperator, line, col))
                         : left(this.inputStream.croak(`Unknown operator "${opStr}"`))
             )
         )
@@ -178,16 +208,20 @@ export class TofuLexer {
 
 
     readNext(): Either<string, Token> {
+
+        let { line, col } = this.inputStream
+        col++
+
         let chr = this.inputStream.peek()
         if (chr === "{") {
             this.inputStream.next()
-            return right(new OpenTemplateToken())
+            return right(new OpenTemplateToken(line, col))
         }
 
 
         if (chr === "}") {
             this.inputStream.next()
-            return right(new CloseTemplateToken())
+            return right(new CloseTemplateToken(line, col))
         }
 
         let res = this.readWhile(isWhitespace);
@@ -201,11 +235,11 @@ export class TofuLexer {
         if (isDigit(chr)) return this.readNumber()
         if (chr === "(") {
             this.inputStream.next()
-            return right(new OpenParenthesisToken())
+            return right(new OpenParenthesisToken(line, col))
         }
         if (chr === ")") {
             this.inputStream.next()
-            return right(new CloseParenthesisToken())
+            return right(new CloseParenthesisToken(line, col))
         }
         if (isUnOperatorStart(chr)) return this.readOperator(UnOperator)
         if (isBinOperatorStart(chr)) return this.readOperator(BinOperator)

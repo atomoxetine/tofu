@@ -2,7 +2,7 @@ import { TofuInputStream } from "./inputstream"
 import { TofuLexer } from "./lexer"
 
 
-const str = "{meow undefined + == ! $asd ( )) \"moew\" 'ajdklasj'}"
+const str = "{meow + == ! $asd ( )) \"meow meow \\n \\\\ \\\"  \" 'ajdklasj'}"
 
 let lexer = new TofuLexer(new TofuInputStream(str))
 
