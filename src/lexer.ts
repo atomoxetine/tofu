@@ -83,7 +83,6 @@ export class TofuLexer {
         let err: string | null = null
 
         let { line, col } = this.inputStream
-        col++
 
         let numberRes = this.readWhile((chr: string) => {
             if (chr == ".") {
@@ -144,7 +143,6 @@ export class TofuLexer {
     readString(): Either<string, StringToken> {
 
         let { line, col } = this.inputStream
-        col++
 
         return pipe(
             this.readEscaped(),
@@ -158,7 +156,6 @@ export class TofuLexer {
     readSymbol(): Either<string, SymbolToken | KeywordToken> {
 
         let { line, col } = this.inputStream
-        col++
 
         return pipe(
             this.readWhile(isSymbolBody),
@@ -174,7 +171,6 @@ export class TofuLexer {
     readOperator(operator: Object): Either<string, UnOperatorToken | BinOperatorToken> {
 
         let { line, col } = this.inputStream
-        col++
 
         let remaining = Object.values(operator)
         let idx = 0
@@ -210,7 +206,6 @@ export class TofuLexer {
     readNext(): Either<string, Token> {
 
         let { line, col } = this.inputStream
-        col++
 
         let chr = this.inputStream.peek()
         if (chr === "{") {
@@ -229,6 +224,9 @@ export class TofuLexer {
         if (this.inputStream.eof())
             return left(this.inputStream.croak("Unexpected EOF"))
         chr = this.inputStream.peek()
+
+        line = this.inputStream.line
+        col = this.inputStream.col
 
         if (chr === '"') return this.readString()
         if (chr === "'") return this.readString()
